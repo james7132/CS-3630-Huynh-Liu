@@ -35,7 +35,7 @@ class labyrinthe(list):
 
     def get_path(self,start,exit):
         import heapq
-
+        width, height = self.size
         dead_end = [4 - sum(x) for x in self]
 
         #useDeadEnd = True       # change to test
@@ -95,7 +95,7 @@ class labyrinthe(list):
             # DEAD END END
 
         def heuristic(s, e):
-            return abs(s % 50 - e % 50) + abs(s / 50 - e / 50)
+            return abs(s % width - e % width) + abs(s / width - e / width)
 
         def rebuildPath(rebuild):
             solution = [rebuild]
@@ -114,8 +114,8 @@ class labyrinthe(list):
 
         while openList:
             node = heapq.heappop(openList)
-            # screen.fill(0x33FF33,rectslist[node[1]])
-            # display.update(rectslist[node[1]])
+            screen.fill(0x33FF33,rectslist[node[1]])
+            display.update(rectslist[node[1]])
             ol.remove(node[1])
             if node[1] == exit:
                 #print "Path found!"
@@ -127,8 +127,8 @@ class labyrinthe(list):
             for i, dir in enumerate(neighbors):
                 if dir == 1:                                # if wall, continue
                     continue
-                neighbor = node[1] + [1, 50, -1, -50][i]
-                if neighbor < 0 or neighbor > 50 * 50:    # if out of bounds, continue
+                neighbor = node[1] + [1, width, -1, -width][i]
+                if neighbor < 0 or neighbor > width * height:    # if out of bounds, continue
                     continue
                 if neighbor in closedList:
                     continue
@@ -142,9 +142,9 @@ class labyrinthe(list):
                     if current == exit:
                         # print "Path found in a corridor!"
                         return rebuildPath(exit)
-                    #screen.fill(0xEE00EE, rectslist[current])
-                    #display.update(rectslist[current])
-                    n = [current + 1, current + 50, current - 1, current - 50]
+                    screen.fill(0xEE00EE, rectslist[current])
+                    display.update(rectslist[current])
+                    n = [current + 1, current + width, current - 1, current - width]
                     valid = [v for j,v in enumerate(n) if self[current][j] == 0 and v != old]
 
                     old = current
@@ -152,8 +152,8 @@ class labyrinthe(list):
                     pathLength += 1
                 ancestor[current] = old
                 if dead_end[current] == 1:
-                    #screen.fill(0x333333, rectslist[current])
-                    #display.update(rectslist[current])
+                    screen.fill(0x333333, rectslist[current])
+                    display.update(rectslist[current])
                     if current == exit:
                         #print "Path found in a dead end!"
                         return rebuildPath(exit)
@@ -235,13 +235,13 @@ class labyrinthe(list):
 if __name__ == '__main__':
     me = Surface((5,5))
     me.fill(0xff0000)
-    L = labyrinthe((50,50))
-    labx,laby = 50,50
+    L = labyrinthe((25,50))
+    labx,laby = 25,50
     screen = display.set_mode((L.size[0]*10,L.size[1]*10))
     image,rectslist = L.get_image_and_rects((10,10),wallcolor=0,celcolor=0xffffff)
     screen.blit(image,(0,0))
-    start = random.randrange(len(L))
-    exit = random.randrange(len(L))
+    start = 0#random.randrange(len(L))
+    exit = 25*50-1#random.randrange(len(L))
     screen.fill(0x00ff00,rectslist[exit])
     screen.blit(me,rectslist[start])
     display.flip()
@@ -281,7 +281,7 @@ def test(tests):
         times.append(time.time() - timeStart)
         if len(path) == 0:
             notFound += 1
-        ed = abs(s % 50 - e % 50) + abs(s / 50 - e / 50)
+        ed = abs(s % l.size[0] - e % l.size[0]) + abs(s / l.size[0] - e / l.size[0])
         pl = len(path)
         crs.append(pl / (float(ed)))
     print "Average time:", sum(times) / float(len(times))
