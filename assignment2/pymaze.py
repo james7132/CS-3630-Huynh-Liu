@@ -35,6 +35,36 @@ class labyrinthe(list):
 
 		
 	def get_path(self,start,exit):
+		import random
+		width = 50
+		height = 50
+
+		dead_end = [4 - sum(x) for x in self]
+		maze_copy = [[y for y in x] for x in self]
+		
+		dead_end[start] = -1
+		dead_end[exit] = -1
+
+		unprocessed = [i for i,v in enumerate(dead_end) if v == 1]
+		random.shuffle(unprocessed)
+
+		while unprocessed:
+			current = unprocessed.pop()
+			if dead_end[current] > 0 and dead_end[current] <= 2:
+				neighbor = [current + 1, current + width, current - 1, current - width]
+				valid_successors = []
+				for i,v in enumerate(self[current]):
+					n = neighbor[i]
+					if v == 0 and n >= 0 and n < width * height and dead_end[n] > 1:
+						valid_successors.append(n)
+				unprocessed += valid_successors
+				dead_end[current] = 1			
+				#screen.fill(0x0, rectslist[current])
+				#display.update(rectslist[current])
+			else:
+				dead_end[current] -= 1
+
+
 		pos = start
 		d = 1
 		path = [pos]
@@ -63,10 +93,11 @@ class labyrinthe(list):
 #****************************************************************************************
 #****************************************************************************************
 if __name__ == '__main__':
+	import time
 	me = Surface((5,5))
 	me.fill(0xff0000)
 	L = labyrinthe((50,50))
-	labx,laby = 50,50
+	labx,laby = 50,10
 	screen = display.set_mode((L.size[0]*10,L.size[1]*10))
 	image,rectslist = L.get_image_and_rects((10,10),wallcolor=0,celcolor=0xffffff)
 	screen.blit(image,(0,0))
@@ -89,7 +120,10 @@ if __name__ == '__main__':
 		display.flip()
 		if start == exit : print 'YOU WIN'; break
 		if key.get_pressed()[K_ESCAPE]:
-			for i in L.get_path(start,exit)[1:-1]:
-				screen.fill(0x0000ff,rectslist[i])
-				display.update(rectslist[i])
-				time.wait(20)
+			timeStart = time.time()
+			L.get_path(start,exit)
+			#for i in L.get_path(start,exit)[1:-1]:
+				#screen.fill(0x0000ff,rectslist[i])
+				#display.update(rectslist[i])
+				#time.wait(20)
+			print "Total Time: ", time.time() - timeStart
