@@ -63,8 +63,8 @@ class labyrinthe(list):
                             valid_successors.append(n)
                     unprocessed += valid_successors
                     dead_end[current] = 1
-                    screen.fill(0x444444,rectslist[current])
-                    display.update(rectslist[current])
+                    #screen.fill(0x444444,rectslist[current])
+                    #display.update(rectslist[current])
                 else:
                     dead_end[current] -= 1
 
@@ -90,11 +90,11 @@ class labyrinthe(list):
 
         while openList:
             node = heapq.heappop(openList)
-            screen.fill(0x7777FF - (len(closedList)),rectslist[node[1]])
-            display.update(rectslist[node[1]])
+            #screen.fill(0x7777FF - (len(closedList)),rectslist[node[1]])
+            #display.update(rectslist[node[1]])
             ol.remove(node[1])
             if node[1] == exit:
-                print "Path found!"
+                #print "Path found!"
                 return rebuildPath(exit)
 
             closedList.add(node[1])
@@ -121,7 +121,7 @@ class labyrinthe(list):
                         ol.append(neighbor)
                         heapq.heappush(openList, (neighborF, neighbor))
 
-        print "Path not found!"
+        #print "Path not found!"
         return []
 
 
@@ -213,17 +213,21 @@ def test(tests):
     import time
     times = []
     crs = []
+    notFound = 0
     for i in range(tests):
         l = labyrinthe((50,50))
-        timeStart = time.time()
         s = random.randrange(len(l))
         e = random.randrange(len(l))
         while e == s:
             e = random.randrange(len(l))
+        timeStart = time.time()
         path = l.get_path(s, e)
         times.append(time.time() - timeStart)
+        if len(path) == 0:
+            notFound += 1
         ed = abs(s % 50 - e % 50) + abs(s / 50 - e / 50)
         pl = len(path)
         crs.append(pl / (float(ed)))
     print "Average time:", sum(times) / float(len(times))
     print "Average CR:", sum(crs) / float(len(crs))
+    print "Unsolvable mazes (%):", (notFound / float(len(times)))
