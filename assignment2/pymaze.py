@@ -94,14 +94,14 @@ class labyrinthe(list):
 
             # DEAD END END
 
-        def heuristic(start, end):
-            return abs(start % 50 - end % 50) + abs(start / 50 - end / 50)
+        def heuristic(s, e):
+            return abs(s % 50 - e % 50) + abs(s / 50 - e / 50)
 
-        def rebuildPath(current):
-            solution = [current]
-            while current in ancestor:
-                current = ancestor[current]
-                solution.append(current)
+        def rebuildPath(rebuild):
+            solution = [rebuild]
+            while rebuild in ancestor:
+                rebuild = ancestor[rebuild]
+                solution.append(rebuild)
             return solution[::-1]
 
         g = {start: 0}
@@ -114,8 +114,8 @@ class labyrinthe(list):
 
         while openList:
             node = heapq.heappop(openList)
-            #screen.fill(0x33FF33,rectslist[node[1]])
-            #display.update(rectslist[node[1]])
+            # screen.fill(0x33FF33,rectslist[node[1]])
+            # display.update(rectslist[node[1]])
             ol.remove(node[1])
             if node[1] == exit:
                 #print "Path found!"
@@ -128,19 +128,19 @@ class labyrinthe(list):
                 if dir == 1:                                # if wall, continue
                     continue
                 neighbor = node[1] + [1, 50, -1, -50][i]
-                # if useDeadEnd and dead_end[neighbor] <= 1:  # dead end check
-                #     continue
                 if neighbor < 0 or neighbor > 50 * 50:    # if out of bounds, continue
                     continue
                 if neighbor in closedList:
                     continue
 
+                ancestor[neighbor] = node[1]
                 current = neighbor      # explore along corridor until a junction or dead end is hit
                 old = node[1]
                 pathLength = 1
                 while dead_end[current] == 2:
+                    ancestor[current] = old
                     if current == exit:
-                        #print "Path found in a corridor!"
+                        # print "Path found in a corridor!"
                         return rebuildPath(exit)
                     #screen.fill(0xEE00EE, rectslist[current])
                     #display.update(rectslist[current])
@@ -149,8 +149,8 @@ class labyrinthe(list):
 
                     old = current
                     current = valid[0]
-                    ancestor[current] = old
                     pathLength += 1
+                ancestor[current] = old
                 if dead_end[current] == 1:
                     #screen.fill(0x333333, rectslist[current])
                     #display.update(rectslist[current])
@@ -171,7 +171,6 @@ class labyrinthe(list):
                     g[current] = 0
                 currentG = g[current] + pathLength
                 if current not in ol or currentG < g[current]:
-                    #ancestor[neighbor] = node[1]
                     g[current] = currentG
                     currentF = g[current] + heuristic(current, exit)
                     if current not in ol:
@@ -241,8 +240,8 @@ if __name__ == '__main__':
     screen = display.set_mode((L.size[0]*10,L.size[1]*10))
     image,rectslist = L.get_image_and_rects((10,10),wallcolor=0,celcolor=0xffffff)
     screen.blit(image,(0,0))
-    start = 0#random.randrange(len(L))
-    exit = 50*50-1#random.randrange(len(L))
+    start = random.randrange(len(L))
+    exit = random.randrange(len(L))
     screen.fill(0x00ff00,rectslist[exit])
     screen.blit(me,rectslist[start])
     display.flip()
