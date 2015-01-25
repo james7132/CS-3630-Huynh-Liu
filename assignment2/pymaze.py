@@ -63,11 +63,32 @@ class labyrinthe(list):
                             valid_successors.append(n)
                     unprocessed += valid_successors
                     dead_end[current] = 1
-                    screen.fill(0x444444,rectslist[current])
-                    display.update(rectslist[current])
+                    #screen.fill(0x444444,rectslist[current])
+                    #display.update(rectslist[current])
                 else:
                     dead_end[current] -= 1
 
+            dead_path = []
+            current =  start
+            old = -1
+            useAStar = False
+            while current != exit:
+                n = [current + 1, current + width, current - 1, current - width]
+                valid = [v for i,v in enumerate(n) if self[current][i] == 0 and dead_end[v] > 1 and v != old]
+                dead_path.append(current)
+                old = current
+                if len(valid) == 1:
+                    current = valid[0]
+                elif valid:
+                    print "Using AStar Instead"
+                    useAStar = True
+                    break
+                else:
+                    print "Path Not Found"
+                    return []
+            if not useAStar:
+                dead_path.append(current)
+                return dead_path
             # DEAD END END
 
         def heuristic(start, end):
@@ -90,8 +111,8 @@ class labyrinthe(list):
 
         while openList:
             node = heapq.heappop(openList)
-            screen.fill(0x7777FF - (len(closedList)),rectslist[node[1]])
-            display.update(rectslist[node[1]])
+            #screen.fill(0x7777FF - (len(closedList)),rectslist[node[1]])
+            #display.update(rectslist[node[1]])
             ol.remove(node[1])
             if node[1] == exit:
                 print "Path found!"
