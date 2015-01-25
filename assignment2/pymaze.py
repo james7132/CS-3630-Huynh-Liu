@@ -37,7 +37,6 @@ class labyrinthe(list):
         import heapq
         width, height = self.size
         dead_end = [4 - sum(x) for x in self]
-        old_direction = [2, 3, 0, 1]
         offsets = [1, width, -1, -width]
 
         #useDeadEnd = True       # change to test
@@ -102,9 +101,6 @@ class labyrinthe(list):
         def rebuildPath(rebuild):
             solution = [rebuild]
             while rebuild in ancestor:
-                #screen.fill(0xFF00FF, rectslist[current])
-                #display.update(rectslist[current])
-                #zprint rebuild
                 prev = ancestor[rebuild]
                 addedPoints = None
                 if prev < rebuild:
@@ -131,11 +127,8 @@ class labyrinthe(list):
 
         while openList:
             node = heapq.heappop(openList)[1]
-            #screen.fill(0x00FFFF,rectslist[node[1]])
-            #display.update(rectslist[node[1]])
             ol.remove(node)
             if node == exit:
-                #print "Path found!"
                 return rebuildPath(exit)
 
             closedList.add(node)
@@ -156,8 +149,6 @@ class labyrinthe(list):
                     if current == exit:
                         ancestor[current] = lastNode
                         return rebuildPath(exit)
-                    #screen.fill(0xFFFF00, rectslist[current])
-                    #display.update(rectslist[current])
                     old = current
                     neighbors = self[current]
                     if neighbors[currentDirection] == 0:
@@ -178,24 +169,19 @@ class labyrinthe(list):
                     pathLength += 1
                 ancestor[current] = lastNode
 
-                #screen.fill(0x0000FF, rectslist[current])
-                #display.update(rectslist[current])
-
                 if pathLength > 1:
                     closedList.add(old)
 
                 if dead_end[current] == 1:
-                    #screen.fill(0x000000, rectslist[current])
-                    #display.update(rectslist[current])
                     if current == exit:
                         return rebuildPath(exit)
                 elif current not in ol:
-                    g[current] = g[node] + pathLength
-                    currentF = g[current] + heuristic(current, exit)
+                    currentG = g[current] = g[node] + pathLength
+                    currentF = currentG + heuristic(current, exit)
                     ol.add(current)
                     heapq.heappush(openList, (currentF, current))
 
-        #print "Path not found!"
+        print "Path not found!"
         return []
 
 
