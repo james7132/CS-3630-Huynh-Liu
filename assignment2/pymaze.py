@@ -35,60 +35,63 @@ class labyrinthe(list):
 
     def get_path(self,start,exit):
         import heapq
-        import random
 
-        useDeadEnd = True       # change to test
+        dead_end = [4 - sum(x) for x in self]
 
-        if useDeadEnd:
-            # DEAD END START
-            width = 50
-            height = 50
+        #useDeadEnd = True       # change to test
 
-            dead_end = [4 - sum(x) for x in self]
+        # if useDeadEnd:
+        #     # DEAD END START
+        #     width = 50
+        #     height = 50
+        #
+        #     dead_end = [4 - sum(x) for x in self]
+        #
+        #     dead_end[start] = 50*50+1
+        #     dead_end[exit] = 50*50+1
+        #
+        #     unprocessed = [i for i,v in enumerate(dead_end) if v == 1]
+        #     random.shuffle(unprocessed)
+        #
+        #     while unprocessed:
+        #         current = unprocessed.pop()
+        #         if 0 < dead_end[current] <= 2:
+        #             neighbor = [current + 1, current + width, current - 1, current - width]
+        #             valid_successors = []
+        #             for i,v in enumerate(self[current]):
+        #                 n = neighbor[i]
+        #                 if v == 0 and 0 <= n < width * height and dead_end[n] > 1:
+        #                     valid_successors.append(n)
+        #             unprocessed += valid_successors
+        #             dead_end[current] = 1
+        #             #screen.fill(0x444444,rectslist[current])
+        #             #display.update(rectslist[current])
+        #         else:
+        #             dead_end[current] -= 1
+        #
+        #     dead_path = []
+        #     current =  start
+        #     old = -1
+        #     useAStar = False
+        #     while current != exit:
+        #         n = [current + 1, current + width, current - 1, current - width]
+        #         valid = [v for i,v in enumerate(n) if self[current][i] == 0 and dead_end[v] > 1 and v != old]
+        #         dead_path.append(current)
+        #         old = current
+        #         if len(valid) == 1:
+        #             current = valid[0]
+        #         elif valid:
+        #             print "Using AStar Instead"
+        #             useAStar = True
+        #             break
+        #         else:
+        #             print "Path Not Found"
+        #             return []
+        #     if not useAStar:
+        #         dead_path.append(current)
+        #         return dead_path
+        #
 
-            dead_end[start] = 50*50+1
-            dead_end[exit] = 50*50+1
-
-            unprocessed = [i for i,v in enumerate(dead_end) if v == 1]
-            random.shuffle(unprocessed)
-
-            while unprocessed:
-                current = unprocessed.pop()
-                if 0 < dead_end[current] <= 2:
-                    neighbor = [current + 1, current + width, current - 1, current - width]
-                    valid_successors = []
-                    for i,v in enumerate(self[current]):
-                        n = neighbor[i]
-                        if v == 0 and 0 <= n < width * height and dead_end[n] > 1:
-                            valid_successors.append(n)
-                    unprocessed += valid_successors
-                    dead_end[current] = 1
-                    #screen.fill(0x444444,rectslist[current])
-                    #display.update(rectslist[current])
-                else:
-                    dead_end[current] -= 1
-
-            dead_path = []
-            current =  start
-            old = -1
-            useAStar = False
-            while current != exit:
-                n = [current + 1, current + width, current - 1, current - width]
-                valid = [v for i,v in enumerate(n) if self[current][i] == 0 and dead_end[v] > 1 and v != old]
-                dead_path.append(current)
-                old = current
-                if len(valid) == 1:
-                    current = valid[0]
-                elif valid:
-                    print "Using AStar Instead"
-                    useAStar = True
-                    break
-                else:
-                    print "Path Not Found"
-                    return []
-            if not useAStar:
-                dead_path.append(current)
-                return dead_path
             # DEAD END END
 
         def heuristic(start, end):
@@ -105,13 +108,13 @@ class labyrinthe(list):
 
         closedList = set()
         openList = [(g[start] + heuristic(start, exit), start)]     # (f, location)
-        ol = [start]
+        ol = {start}
         heapq.heapify(openList)
         ancestor = {}
 
         while openList:
             node = heapq.heappop(openList)
-            #screen.fill(0x7777FF - (len(closedList)),rectslist[node[1]])
+            #screen.fill(0x33FF33,rectslist[node[1]])
             #display.update(rectslist[node[1]])
             ol.remove(node[1])
             if node[1] == exit:
@@ -125,22 +128,55 @@ class labyrinthe(list):
                 if dir == 1:                                # if wall, continue
                     continue
                 neighbor = node[1] + [1, 50, -1, -50][i]
-                if useDeadEnd and dead_end[neighbor] <= 1:  # dead end check
-                    continue
+                # if useDeadEnd and dead_end[neighbor] <= 1:  # dead end check
+                #     continue
                 if neighbor < 0 or neighbor > 50 * 50:    # if out of bounds, continue
                     continue
                 if neighbor in closedList:
                     continue
-                if not neighbor in g.keys():
-                    g[neighbor] = 0
-                neighborG = g[neighbor] + 1
-                if neighbor not in ol or neighborG < g[neighbor]:
-                    ancestor[neighbor] = node[1]
-                    g[neighbor] = neighborG
-                    neighborF = g[neighbor] + heuristic(neighbor, exit)
-                    if neighbor not in ol:
-                        ol.append(neighbor)
-                        heapq.heappush(openList, (neighborF, neighbor))
+
+                current = neighbor      # explore along corridor until a junction or dead end is hit
+                old = node[1]
+                pathLength = 1
+                while dead_end[current] == 2:
+                    if current == exit:
+                        #print "Path found in a corridor!"
+                        return rebuildPath(exit)
+                    #screen.fill(0xEE00EE, rectslist[current])
+                    #display.update(rectslist[current])
+                    n = [current + 1, current + 50, current - 1, current - 50]
+                    valid = [v for j,v in enumerate(n) if self[current][j] == 0 and v != old]
+
+                    old = current
+                    current = valid[0]
+                    ancestor[current] = old
+                    pathLength += 1
+                if dead_end[current] == 1:
+                    #screen.fill(0x333333, rectslist[current])
+                    #display.update(rectslist[current])
+                    if current == exit:
+                        #print "Path found in a dead end!"
+                        return rebuildPath(exit)
+                    continue
+
+                if pathLength > 1:
+                    #screen.fill(0xFF0000, rectslist[current])
+                    #display.update(rectslist[current])
+                    closedList.add(old)
+
+                #screen.fill(0x0000FF, rectslist[current])
+                #display.update(rectslist[current])
+
+                if not current in g.keys():
+                    g[current] = 0
+                currentG = g[current] + pathLength
+                if current not in ol or currentG < g[current]:
+                    #ancestor[neighbor] = node[1]
+                    g[current] = currentG
+                    currentF = g[current] + heuristic(current, exit)
+                    if current not in ol:
+                        ol.add(current)
+                        heapq.heappush(openList, (currentF, current))
 
         #print "Path not found!"
         return []
@@ -205,8 +241,8 @@ if __name__ == '__main__':
     screen = display.set_mode((L.size[0]*10,L.size[1]*10))
     image,rectslist = L.get_image_and_rects((10,10),wallcolor=0,celcolor=0xffffff)
     screen.blit(image,(0,0))
-    start = random.randrange(len(L))
-    exit = random.randrange(len(L))
+    start = 0#random.randrange(len(L))
+    exit = 50*50-1#random.randrange(len(L))
     screen.fill(0x00ff00,rectslist[exit])
     screen.blit(me,rectslist[start])
     display.flip()
