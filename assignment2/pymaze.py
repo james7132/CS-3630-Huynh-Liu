@@ -37,7 +37,7 @@ class labyrinthe(list):
         import heapq
         import random
 
-        useDeadEnd = False       # change to test
+        useDeadEnd = True       # change to test
 
         if useDeadEnd:
             # DEAD END START
@@ -80,11 +80,11 @@ class labyrinthe(list):
                 if len(valid) == 1:
                     current = valid[0]
                 elif valid:
-                    #print "Using AStar Instead"
+                    print "Using AStar Instead"
                     useAStar = True
                     break
                 else:
-                    #print "Path Not Found"
+                    print "Path Not Found"
                     return []
             if not useAStar:
                 dead_path.append(current)
@@ -105,6 +105,7 @@ class labyrinthe(list):
 
         closedList = set()
         openList = [(g[start] + heuristic(start, exit), start)]     # (f, location)
+        ol = [start]
         heapq.heapify(openList)
         ancestor = {}
 
@@ -112,6 +113,7 @@ class labyrinthe(list):
             node = heapq.heappop(openList)
             #screen.fill(0x7777FF - (len(closedList)),rectslist[node[1]])
             #display.update(rectslist[node[1]])
+            ol.remove(node[1])
             if node[1] == exit:
                 #print "Path found!"
                 return rebuildPath(exit)
@@ -132,12 +134,12 @@ class labyrinthe(list):
                 if not neighbor in g.keys():
                     g[neighbor] = 0
                 neighborG = g[neighbor] + 1
-                ol = [n for f,n in openList]
                 if neighbor not in ol or neighborG < g[neighbor]:
                     ancestor[neighbor] = node[1]
                     g[neighbor] = neighborG
                     neighborF = g[neighbor] + heuristic(neighbor, exit)
                     if neighbor not in ol:
+                        ol.append(neighbor)
                         heapq.heappush(openList, (neighborF, neighbor))
 
         #print "Path not found!"
