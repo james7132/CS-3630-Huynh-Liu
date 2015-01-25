@@ -37,6 +37,8 @@ class labyrinthe(list):
         import heapq
         width, height = self.size
         dead_end = [4 - sum(x) for x in self]
+        old_direction = [2, 3, 0, 1]
+        offsets = [1, width, -1, -width]
 
         #useDeadEnd = True       # change to test
 
@@ -100,82 +102,98 @@ class labyrinthe(list):
         def rebuildPath(rebuild):
             solution = [rebuild]
             while rebuild in ancestor:
-                rebuild = ancestor[rebuild]
-                solution.append(rebuild)
-            return solution[::-1]
+                #screen.fill(0xFF00FF, rectslist[current])
+                #display.update(rectslist[current])
+                #zprint rebuild
+                prev = ancestor[rebuild]
+                addedPoints = None
+                if prev < rebuild:
+                    if (prev - rebuild) % width == 0:
+                        addedPoints = range(prev, rebuild, width)
+                    else:
+                        addedPoints = range(prev, rebuild)
+                else:
+                    if (prev - rebuild) % width == 0:
+                        addedPoints = range(prev, rebuild, -width)
+                    else:
+                        addedPoints = range(prev, rebuild, -1)
+                solution = addedPoints + solution
+                rebuild = prev
+            return solution
 
         g = {start: 0}
 
         closedList = set()
-        openList = [(g[start] + heuristic(start, exit), start)]     # (f, location)
-        ol = {start}
+        openList = [(heuristic(start, exit), start)]     # (f, location)
+        ol = set([start])
         heapq.heapify(openList)
         ancestor = {}
 
         while openList:
-            node = heapq.heappop(openList)
-            screen.fill(0x33FF33,rectslist[node[1]])
-            display.update(rectslist[node[1]])
-            ol.remove(node[1])
-            if node[1] == exit:
+            node = heapq.heappop(openList)[1]
+            #screen.fill(0x00FFFF,rectslist[node[1]])
+            #display.update(rectslist[node[1]])
+            ol.remove(node)
+            if node == exit:
                 #print "Path found!"
                 return rebuildPath(exit)
 
-            closedList.add(node[1])
-            neighbors = self[node[1]]
+            closedList.add(node)
             # [right, up, left, down]
-            for i, dir in enumerate(neighbors):
-                if dir == 1:                                # if wall, continue
+            for i, dir in enumerate(self[node]):
+                if dir == 1:
                     continue
-                neighbor = node[1] + [1, width, -1, -width][i]
-                if neighbor < 0 or neighbor > width * height:    # if out of bounds, continue
-                    continue
-                if neighbor in closedList:
+                neighbor = node + offsets[i]
+                if neighbor in closedList or neighbor < 0 or neighbor > width * height: # if out of bounds, continue
                     continue
 
-                ancestor[neighbor] = node[1]
                 current = neighbor      # explore along corridor until a junction or dead end is hit
-                old = node[1]
+                old = node
                 pathLength = 1
+                lastNode = node
+                currentDirection = i
                 while dead_end[current] == 2:
-                    ancestor[current] = old
                     if current == exit:
-                        # print "Path found in a corridor!"
+                        ancestor[current] = lastNode
                         return rebuildPath(exit)
-                    screen.fill(0xEE00EE, rectslist[current])
-                    display.update(rectslist[current])
-                    n = [current + 1, current + width, current - 1, current - width]
-                    valid = [v for j,v in enumerate(n) if self[current][j] == 0 and v != old]
-
-                    old = current
-                    current = valid[0]
-                    pathLength += 1
-                ancestor[current] = old
-                if dead_end[current] == 1:
-                    screen.fill(0x333333, rectslist[current])
-                    display.update(rectslist[current])
-                    if current == exit:
-                        #print "Path found in a dead end!"
-                        return rebuildPath(exit)
-                    continue
-
-                if pathLength > 1:
-                    #screen.fill(0xFF0000, rectslist[current])
+                    #screen.fill(0xFFFF00, rectslist[current])
                     #display.update(rectslist[current])
-                    closedList.add(old)
+                    old = current
+                    neighbors = self[current]
+                    if neighbors[currentDirection] == 0:
+                        current += offsets[currentDirection]
+                    else:
+                        ancestor[current] = lastNode
+                        lastNode = current
+                        n = [current + 1, current + width, current - 1, current - width]
+                        for j, v in enumerate(n):
+                            # Old Direction = Opposite of Current Direction
+                            # Right (0) <-> Left (2), 0000 <-> 0010
+                            # Up (1) <-> Down (3),    0001 <-> 0011
+                            # Thus if j == currentDirection XOR 2, then v == old
+                            if neighbors[j] == 0 and currentDirection ^ 0x2 != j:
+                                currentDirection = j
+                                current = v
+                                break
+                    pathLength += 1
+                ancestor[current] = lastNode
 
                 #screen.fill(0x0000FF, rectslist[current])
                 #display.update(rectslist[current])
 
-                if not current in g.keys():
-                    g[current] = 0
-                currentG = g[current] + pathLength
-                if current not in ol or currentG < g[current]:
-                    g[current] = currentG
+                if pathLength > 1:
+                    closedList.add(old)
+
+                if dead_end[current] == 1:
+                    #screen.fill(0x000000, rectslist[current])
+                    #display.update(rectslist[current])
+                    if current == exit:
+                        return rebuildPath(exit)
+                elif current not in ol:
+                    g[current] = g[node] + pathLength
                     currentF = g[current] + heuristic(current, exit)
-                    if current not in ol:
-                        ol.add(current)
-                        heapq.heappush(openList, (currentF, current))
+                    ol.add(current)
+                    heapq.heappush(openList, (currentF, current))
 
         #print "Path not found!"
         return []
@@ -235,13 +253,13 @@ class labyrinthe(list):
 if __name__ == '__main__':
     me = Surface((5,5))
     me.fill(0xff0000)
-    L = labyrinthe((25,50))
-    labx,laby = 25,50
+    L = labyrinthe((50,50))
+    labx,laby = 50,50
     screen = display.set_mode((L.size[0]*10,L.size[1]*10))
     image,rectslist = L.get_image_and_rects((10,10),wallcolor=0,celcolor=0xffffff)
     screen.blit(image,(0,0))
     start = 0#random.randrange(len(L))
-    exit = 25*50-1#random.randrange(len(L))
+    exit = 50*50-1#random.randrange(len(L))
     screen.fill(0x00ff00,rectslist[exit])
     screen.blit(me,rectslist[start])
     display.flip()
@@ -270,8 +288,10 @@ def test(tests):
     times = []
     crs = []
     notFound = 0
+    w, h = 50, 50
+    incorrect = 0
     for i in range(tests):
-        l = labyrinthe((50,50))
+        l = labyrinthe((w, h))
         s = random.randrange(len(l))
         e = random.randrange(len(l))
         while e == s:
@@ -281,9 +301,53 @@ def test(tests):
         times.append(time.time() - timeStart)
         if len(path) == 0:
             notFound += 1
+        else:
+            last = s
+            i = 1
+            marked = False
+            while i < len(path):
+                if not ((last - path[i]) % w != 0 or abs(last - path[i]) != 1):
+                    print "Movement: ", last, path[i], (last - path[i]) % w
+                    marked = True
+                    break
+                if path[i] < last:
+                    if (last - path[i]) % w == 0:
+                        if l[last][3] == 1:
+                            print "Up Movment: ", last, path[i], l[last][3]
+                            marked = True
+                            break
+                    else:
+                        if l[last][2] == 1:
+                            print "Left Movment: ", last, path[i], l[last][2]
+                            marked = True
+                            break
+                else:
+                    if (last - path[i]) % w == 0:
+                        if l[last][1] == 1:
+                            print "Down Movement: ", last, path[i], l[last][2]
+                            marked = True
+                            break
+                    else:
+                        if l[last][0] == 1:
+                            print "Right Movment: ", last, path[i], l[last][2]
+                            marked = True
+                            break
+                last = path[i]
+                i += 1
+            if path[0] != s:
+                print "Start: ", path[0], s
+                marked = True
+            if path[-1] != e:
+                print "End: ", path[-1], e
+                marked = True
+            if marked:
+                print path
+                incorrect += 1
+
         ed = abs(s % l.size[0] - e % l.size[0]) + abs(s / l.size[0] - e / l.size[0])
         pl = len(path)
         crs.append(pl / (float(ed)))
     print "Average time:", sum(times) / float(len(times))
     print "Average CR:", sum(crs) / float(len(crs))
     print "Unsolvable mazes (%):", (notFound / float(len(times)))
+    print "incorrect: ", incorrect
