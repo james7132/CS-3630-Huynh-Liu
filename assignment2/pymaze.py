@@ -131,7 +131,6 @@ class labyrinthe(list):
             if node == exit:
                 return rebuildPath(exit)
 
-            closedList.add(node)
             # [right, up, left, down]
             for i, dir in enumerate(self[node]):
                 if dir == 1:
@@ -168,9 +167,7 @@ class labyrinthe(list):
                                 break
                     pathLength += 1
                 ancestor[current] = lastNode
-
-                if pathLength > 1:
-                    closedList.add(old)
+                closedList.add(old)
 
                 if dead_end[current] == 1:
                     if current == exit:
