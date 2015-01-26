@@ -153,8 +153,6 @@ class labyrinthe(list):
             if node == exit:                            # check if the goal was reached
                 return rebuildPath(exit)
 
-            closedList.add(node)                        # add the current location to the closed list
-
             # [right, up, left, down]
             for i, dir in enumerate(self[node]):        # check all 4 directions
                 if dir == 1:                            # if there is a wall, continue
@@ -203,9 +201,7 @@ class labyrinthe(list):
                                 break
                     pathLength += 1
                 ancestor[current] = lastNode
-
-                if pathLength > 1:          # prevent backtracking when visiting this junction in the future
-                    closedList.add(old)
+                closedList.add(old)
 
                 if dead_end[current] == 1:  # check for goal if we ended up in a dead end
                     # uncomment to see gray for corner corridors that were traversed through
