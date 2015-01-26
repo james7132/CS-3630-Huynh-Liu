@@ -119,10 +119,10 @@ class labyrinthe(list):
                 solution = addedPoints + solution
                 rebuild = prev
             # uncomment to recolor the start and exit
-            screen.fill(0xFF0000, rectslist[start])
-            display.update(rectslist[start])
-            screen.fill(0x00FF00, rectslist[exit])
-            display.update(rectslist[exit])
+            #screen.fill(0xFF0000, rectslist[start])
+            #display.update(rectslist[start])
+            #screen.fill(0x00FF00, rectslist[exit])
+            #display.update(rectslist[exit])
             # end uncomment
             return solution
 
@@ -136,18 +136,18 @@ class labyrinthe(list):
         ancestor = {}                                   # maps a location to a predecessor location
 
         # uncomment to see a time delay
-        import time
+        #import time
 
         while openList:
             node = heapq.heappop(openList)[1]           # pop the location with the lowest f-cost
             ol.remove(node)
 
             # uncomment to see a time delay
-            time.sleep(.1)
+            #time.sleep(.1)
 
             # uncomment to see green for nodes that were popped from the open list
-            screen.fill(0x22CC22, rectslist[node])
-            display.update(rectslist[node])
+            #screen.fill(0x22CC22, rectslist[node])
+            #display.update(rectslist[node])
             # end uncomment
 
             if node == exit:                            # check if the goal was reached
@@ -171,15 +171,15 @@ class labyrinthe(list):
                 corridor = 4 - sum(neighbors)
                 while corridor == 2:           # while we are in a corridor
                     # uncomment to see a time delay
-                    time.sleep(.025)
+                    #time.sleep(.025)
                     if current == exit:                 # check for goal while traversing a corridor
                         ancestor[current] = lastNode
                         return rebuildPath(exit)
                     old = current
                     if neighbors[currentDirection] == 0:
                         # uncomment to see pink for straight corridors that were traversed through
-                        screen.fill(0xFF7777, rectslist[current])
-                        display.update(rectslist[current])
+                        #screen.fill(0xFF7777, rectslist[current])
+                        #display.update(rectslist[current])
                         # end uncomment
                         current += offsets[currentDirection]
                     else:
@@ -194,8 +194,8 @@ class labyrinthe(list):
                             if neighbors[j] == 0 and currentDirection ^ 0x2 != j:
                                 currentDirection = j
                                 # uncomment to see darker pink for corner corridors that were traversed through
-                                screen.fill(0xFF4444, rectslist[current])
-                                display.update(rectslist[current])
+                                #screen.fill(0xFF4444, rectslist[current])
+                                #display.update(rectslist[current])
                                 # end uncomment
                                 current = v
                                 break
@@ -207,8 +207,8 @@ class labyrinthe(list):
 
                 if corridor == 1:  # check for goal if we ended up in a dead end
                     # uncomment to see gray for corner corridors that were traversed through
-                    screen.fill(0x777777, rectslist[current])
-                    display.update(rectslist[current])
+                    #screen.fill(0x777777, rectslist[current])
+                    #display.update(rectslist[current])
                     # end uncomment
                     if current == exit:
                         return rebuildPath(exit)
