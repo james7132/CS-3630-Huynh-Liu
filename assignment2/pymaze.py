@@ -42,7 +42,7 @@ class labyrinthe(list):
         width, height = self.size               # store a reference to the size of the maze
         offsets = [1, width, -1, -width]        # used to determine the new location from an old location [R, U, L, D]
 
-        dead_end = [4 - sum(x) for x in self]   # pre-process: compute the number of successors for each node
+        #dead_end = [4 - sum(x) for x in self]   # pre-process: compute the number of successors for each node
 
         # uncomment the DEAD END section to test dead end filling
         # DEAD END START
@@ -150,12 +150,13 @@ class labyrinthe(list):
                 pathLength = 1
                 lastNode = node
                 currentDirection = i
-                while dead_end[current] == 2:           # while we are in a corridor
+                neighbors = self[current]
+                corridor = 4 - sum(neighbors)
+                while corridor == 2:           # while we are in a corridor
                     if current == exit:                 # check for goal while traversing a corridor
                         ancestor[current] = lastNode
                         return rebuildPath(exit)
                     old = current
-                    neighbors = self[current]
                     if neighbors[currentDirection] == 0:
                         current += offsets[currentDirection]
                     else:
@@ -171,11 +172,13 @@ class labyrinthe(list):
                                 currentDirection = j
                                 current = v
                                 break
+                    neighbors = self[current]
+                    corridor = 4 - sum(neighbors)
                     pathLength += 1
                 ancestor[current] = lastNode
                 closedList.add(old)
 
-                if dead_end[current] == 1:  # check for goal if we ended up in a dead end
+                if corridor == 1:  # check for goal if we ended up in a dead end
                     if current == exit:
                         return rebuildPath(exit)
                 elif current not in ol:     # normal A-Star update
