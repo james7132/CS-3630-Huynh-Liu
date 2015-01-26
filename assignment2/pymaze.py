@@ -118,6 +118,12 @@ class labyrinthe(list):
                         addedPoints = range(prev, rebuild, -1)
                 solution = addedPoints + solution
                 rebuild = prev
+            # uncomment to recolor the start and exit
+            screen.fill(0xFF0000, rectslist[start])
+            display.update(rectslist[start])
+            screen.fill(0x00FF00, rectslist[exit])
+            display.update(rectslist[exit])
+            # end uncomment
             return solution
 
         # normal A-Star setup
@@ -129,9 +135,20 @@ class labyrinthe(list):
         heapq.heapify(openList)
         ancestor = {}                                   # maps a location to a predecessor location
 
+        # uncomment to see a time delay
+        import time
+
         while openList:
             node = heapq.heappop(openList)[1]           # pop the location with the lowest f-cost
             ol.remove(node)
+
+            # uncomment to see a time delay
+            time.sleep(.1)
+
+            # uncomment to see green for nodes that were popped from the open list
+            screen.fill(0x22CC22, rectslist[node])
+            display.update(rectslist[node])
+            # end uncomment
 
             if node == exit:                            # check if the goal was reached
                 return rebuildPath(exit)
@@ -153,12 +170,19 @@ class labyrinthe(list):
                 lastNode = node
                 currentDirection = i
                 while dead_end[current] == 2:           # while we are in a corridor
+                    # uncomment to see a time delay
+                    time.sleep(.025)
+
                     if current == exit:                 # check for goal while traversing a corridor
                         ancestor[current] = lastNode
                         return rebuildPath(exit)
                     old = current
                     neighbors = self[current]
                     if neighbors[currentDirection] == 0:
+                        # uncomment to see pink for straight corridors that were traversed through
+                        screen.fill(0xFF7777, rectslist[current])
+                        display.update(rectslist[current])
+                        # end uncomment
                         current += offsets[currentDirection]
                     else:
                         ancestor[current] = lastNode
@@ -171,6 +195,10 @@ class labyrinthe(list):
                             # Thus if j == currentDirection XOR 2, then v == old
                             if neighbors[j] == 0 and currentDirection ^ 0x2 != j:
                                 currentDirection = j
+                                # uncomment to see darker pink for corner corridors that were traversed through
+                                screen.fill(0xFF4444, rectslist[current])
+                                display.update(rectslist[current])
+                                # end uncomment
                                 current = v
                                 break
                     pathLength += 1
@@ -180,6 +208,10 @@ class labyrinthe(list):
                     closedList.add(old)
 
                 if dead_end[current] == 1:  # check for goal if we ended up in a dead end
+                    # uncomment to see gray for corner corridors that were traversed through
+                    screen.fill(0x777777, rectslist[current])
+                    display.update(rectslist[current])
+                    # end uncomment
                     if current == exit:
                         return rebuildPath(exit)
                 elif current not in ol:     # normal A-Star update
@@ -249,8 +281,8 @@ if __name__ == '__main__':
     screen = display.set_mode((L.size[0]*10,L.size[1]*10))
     image,rectslist = L.get_image_and_rects((10,10),wallcolor=0,celcolor=0xffffff)
     screen.blit(image,(0,0))
-    start = random.randrange(len(L))
-    exit = random.randrange(len(L))
+    start = 0#random.randrange(len(L))
+    exit = 50*50-1#random.randrange(len(L))
     screen.fill(0x00ff00,rectslist[exit])
     screen.blit(me,rectslist[start])
     display.flip()
