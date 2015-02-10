@@ -227,18 +227,19 @@ classdef Differential < handle
             uR=u(2);
             
             % Measure constants
-            r = 0; %% <------ IMPLEMENT
-            L = 0; %% <------ IMPLEMENT
+            r = 1.375; %% <------ IMPLEMENT
+            L = 5.75; %% <------ IMPLEMENT
             
             % calculate speed
-            vx = 0; %% <------ IMPLEMENT
-            omega = 0; %% <------ IMPLEMENT
+            vx = (r / 2) * (uR + uL); %% <------ IMPLEMENT
+            omega = (r / L) * (uR - uL); %% <------ IMPLEMENT
             
             % update new state using Euler integration, not expmap 
             xp = veh.x; % previous state
-            veh.x(1) = 0; %% <------ IMPLEMENT
-            veh.x(2) = 0; %% <------ IMPLEMENT
-            veh.x(3) = 0; %% <------ IMPLEMENT
+			R = (vx / omega);
+            veh.x(1) = xp(1) + R * sin(omega * veh.dt); %% <------ IMPLEMENT
+            veh.x(2) = xp(2) + R - R * cos(omega * veh.dt); %% <------ IMPLEMENT
+            veh.x(3) = xp(3) + omega * veh.dt; %% <------ IMPLEMENT
             
             odo = [vx*veh.dt omega*veh.dt];
             veh.odometry = odo;
