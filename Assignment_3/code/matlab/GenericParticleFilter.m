@@ -154,6 +154,7 @@ classdef GenericParticleFilter < handle
             pf.nparticles = np;
 
             pf.dim = sensor.map.dim;
+            pf.dim
             pf.history = [];
             pf.x = [];
             pf.weight = [];
@@ -251,7 +252,7 @@ classdef GenericParticleFilter < handle
          end
 
          function step(pf, opt)
-             
+            
             %fprintf('---- step\n');
             odo = pf.robot.step();        % move the robot
 
@@ -259,7 +260,7 @@ classdef GenericParticleFilter < handle
             pf.predict(odo);
 
             % get a sensor reading
-            [z,jf] = pf.sensor.reading();         
+            [z,jf] = pf.sensor.reading();
 
             if opt.sense && ~isnan(jf)
                 pf.observe(z, jf);

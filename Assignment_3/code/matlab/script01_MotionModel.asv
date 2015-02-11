@@ -18,7 +18,7 @@ map=SquareMap(A, 35)
 
 %% and a robot with noisy odometry
 V=diag([0.01, 0.1*pi/180].^2)
-veh=Differential(V, 'x0', [-20, -3, 0])
+veh=Differential(V, 'x0', [-20, 0, 0])
 veh.add_driver(DeterministicPath('log-1423005664.txt'));
 
 %% and then a sensor with noisy readings
@@ -34,4 +34,4 @@ L = diag(0.1);
 pf = GenericParticleFilter(veh, sensor, Q, L, 200);
 
 %% and run for 1000 steps
-pf.run(110,'nouniform', 'nosense');
+pf.run(1,'nouniform','nosense');

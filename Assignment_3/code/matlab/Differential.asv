@@ -234,9 +234,8 @@ classdef Differential < handle
             L = 5.75; %% Wheel Base Wdith: 5.75 inches
             
             % calculate speed
-            vx = vxScale * (r / 2) * (uR + uL); %% velocity
-            uvx = 20 * vx;
-            omega = omegaScale * (r / L) * (uR - uL); %% twist
+            vx = 0.004 * (r / 2) * (uR + uL); %% velocity
+            omega = 0.0475 * (r / L) * (uR - uL); %% twist
             
             % update new state using Euler integration, not expmap 
             xp = veh.x; % previous state
@@ -245,7 +244,8 @@ classdef Differential < handle
             else
                 R = vx;
             end
-            dx = [vx; 0] + R * [sin(omega * veh.dt); 1 - cos(omega * veh.dt)];
+            dx = [vx; 0] + R * [sin(omega * veh.dt);
+                      1 - cos(omega * veh.dt)];
             
             pause(0.25);  
                 
@@ -259,7 +259,7 @@ classdef Differential < handle
             veh.x(2) = xp(2) + dxw(2); %% new y position
             veh.x(3) = xp(3) + omega * veh.dt; %% new theta rotation
           
-            odo = [uvx*veh.dt omega*veh.dt]
+            odo = [vx*veh.dt omega*veh.dt];
             veh.odometry = odo;
        
             veh.x_hist = [veh.x_hist; veh.x'];   % maintain history
