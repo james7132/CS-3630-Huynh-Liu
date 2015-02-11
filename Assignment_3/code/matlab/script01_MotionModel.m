@@ -1,7 +1,8 @@
 % demo08_squareWorldMCL
 % Demo generic Monte Carlo Localization
-
 path(path,'threedee') 
+
+log = 'log-boxworld.txt'
 
 %% Create a map
 A = [
@@ -19,16 +20,16 @@ map=SquareMap(A, 35)
 %% and a robot with noisy odometry
 V=diag([0.01, 0.1*pi/180].^2)
 veh=Differential(V, 'x0', [-20, -3, 0])
-veh.add_driver(DeterministicPath('log-1423005664.txt'));
+veh.add_driver(DeterministicPath(log));
 
 %% and then a sensor with noisy readings
 W=0.05^2;
-sensor = RangeSensor(veh,map, W,'log-1423005664.txt')
+sensor = RangeSensor(veh,map, W,log)
 
 %% define two covariances for random noise Q and L (hmmm!)
 % For Q, use the uncertainly estimates from A2!
-Q = diag([0.01,0.01,0.1*pi/180].^2);
-L = diag(0.1); 
+Q = 25 .* diag([0.01,0.01,0.1*pi/180].^2);
+L = 25 .* diag(0.1); 
 
 %% Finally, construct ParticleFilter
 pf = GenericParticleFilter(veh, sensor, Q, L, 200);
