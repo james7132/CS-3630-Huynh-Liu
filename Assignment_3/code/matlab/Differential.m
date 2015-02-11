@@ -235,7 +235,6 @@ classdef Differential < handle
             
             % calculate speed
             vx = vxScale * (r / 2) * (uR + uL); %% velocity
-            uvx = 20 * vx;
             omega = omegaScale * (r / L) * (uR - uL); %% twist
             
             % update new state using Euler integration, not expmap 
@@ -246,8 +245,6 @@ classdef Differential < handle
                 R = vx;
             end
             dx = [vx; 0] + R * [sin(omega * veh.dt); 1 - cos(omega * veh.dt)];
-            
-            pause(0.25);  
                 
             theta = xp(3);
             rot = [cos(theta), -sin(theta);
@@ -259,7 +256,7 @@ classdef Differential < handle
             veh.x(2) = xp(2) + dxw(2); %% new y position
             veh.x(3) = xp(3) + omega * veh.dt; %% new theta rotation
           
-            odo = [uvx*veh.dt omega*veh.dt]
+            odo = [norm(dxw), omega*veh.dt];
             veh.odometry = odo;
        
             veh.x_hist = [veh.x_hist; veh.x'];   % maintain history
