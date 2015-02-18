@@ -3,20 +3,18 @@
 path(path, 'aprilTag');
 
 % Specify the locations of the April tags in the Map
-A =  [-25.5, -8.25;
-      -25.5, 17.5;
-      -13, 26;
-      30, 26;
-      30, -14;
-      15.5, 5.5;
-      44.5, 5.5];
-A(:, 1) = A(:, 1) + 9; %robot x
-A(:, 2) = A(:, 2) + 8.25; %robot y
+A =  [-16, 0;
+      -16, 25;
+      0, 33.5;
+      55, 25;
+      55, 14.5;
+      27, 14.5;
+      41, -4.5;]
 %% and a robot with noisy odometry
 
 V=diag([0.1, 1.1*pi/180].^2);
 veh=GenericVehicle(V,'dt',0.1);
-veh.x0 = [0,0, pi/2];
+veh.x0 = [0,0, pi];
 veh.add_driver(DeterministicPath('log-1423547652.txt'));
 
 % Creating the map. It places landmarks according to 'A' matrix.
