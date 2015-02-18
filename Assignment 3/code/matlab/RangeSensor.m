@@ -277,17 +277,17 @@ classdef RangeSensor < Sensor
           %    % A lower score means it is less likely to be selected for the next generation...
           %    % The weight is never zero.
           % end
-          
-     
-          weights = zeros(length(x),1);
+          weights = ones(length(x),1);
           
           for i = 1 : length(x)
               z_actual = z;
               z_pred = s.h(x(i,:)');
               z_diff = z_actual - z_pred;
-              innov = z_actual - s.Hx * x(i, :);
-              
-              weights(i) = exp(-0.5 * z_diff ^ 2 - innov);
+              weights(i) = exp(-0.5 * z_diff' * L * z_diff) + weights(i);
+			  %   Equation from:
+			  %   Robotics, Vision & Control, Chap 6,
+			  %   Peter Corke,
+			  %   Springer 2011
           end
           weights
         end
