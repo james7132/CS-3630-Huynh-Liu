@@ -206,7 +206,7 @@ classdef RangeSensor < Sensor
               if s.verbose
                   fprintf('Sensor:: feature %d: %.1f %.1f\n', k, z);
               end
-              if ~isempty(z) && s.animate
+              if ~isempty(z) & s.animate
                   s.plot(jf);
               end
             end
@@ -279,14 +279,17 @@ classdef RangeSensor < Sensor
           % end
           
      
-          weights = ones(length(x),1);
+          weights = zeros(length(x),1);
           
           for i = 1 : length(x)
               z_actual = z;
               z_pred = s.h(x(i,:)');
               z_diff = z_actual - z_pred;
-              weights(i) = exp(-0.5 * z_diff ^ 2 * L);
+              innov = z_actual - s.Hx * x(i, :);
+              
+              weights(i) = exp(-0.5 * z_diff ^ 2 - innov);
           end
+          weights
         end
 
         function str = char(s)
