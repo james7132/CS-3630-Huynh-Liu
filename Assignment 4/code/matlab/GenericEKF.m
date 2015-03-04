@@ -562,7 +562,6 @@ classdef GenericEKF < handle
                 %plot_ellipse(xf, P, interval, 0, [], varargin{:});
                 plot_ellipse(covar^2*P, xf, varargin{:});
                 plot(xf(1), xf(2), '+')
-                
                 xy = [xy xf];
             end
             
@@ -705,7 +704,8 @@ classdef GenericEKF < handle
                 xv_pred = ekf.robot.f(xv_est', odo)';
 
                 Fx = ekf.robot.Fx(xv_est, odo); % Jacobian of f() w.r.t x
-                odomCov = ekf.V_est; % Odometry covariance
+                Fv = ekf.robot.Fv(xv_est, odo);
+                odomCov = Fv*ekf.V_est*Fv';
                 
                 %-------------------------------------------------
                 % Predicted Covariance of vehicle and map
@@ -761,7 +761,7 @@ classdef GenericEKF < handle
                 
                 % Innovation
                 innov(1) = z(1) - z_pred(1); %% <-- IMPLEMENT (use z_pred, z)
-                innov(2) = z(1) - z_pred(2); %% <-- IMPLEMENT (use z_pred, z)
+                innov(2) = z(2) - z_pred(2); %% <-- IMPLEMENT (use z_pred, z)
 
                     % the map is estimated SLAM case
                     if ekf.seenBefore(js)
@@ -806,14 +806,14 @@ classdef GenericEKF < handle
                 % compute x_est and P_est
 
                 % compute innovation covariance
-                S = Hx * P_pred * Hx' + ekf.west; % <-- IMPLEMENT (use Hx, Hw, P_pred, ekf.W_est);
+                S = Hx * P_pred * Hx' + ekf.W_est; % <-- IMPLEMENT (use Hx, Hw, P_pred, ekf.W_est);
     
                 % compute the Kalman gain
-                K = P_pred * Hx' * Inv(S); % <-- IMPLEMENT (use P_pred, Hx, S);
+                K = P_pred * Hx' * inv(S); % <-- IMPLEMENT (use P_pred, Hx, S);
 
                 % update the state vector
-                x_est = x_pred + K * innov; % <-- IMPLEMENT (use x_pred, innov, K);
-            
+                x_est = x_pred + K * innov'; % <-- IMPLEMENT (use x_pred, innov, K);
+                
                 if ekf.estVehicle
                     % wrap heading state for a vehicle
                     x_est(3) = angdiff(x_est(3));
@@ -854,6 +854,8 @@ classdef GenericEKF < handle
         end
 
         function s = seenBefore(ekf, jf)
+            jf
+            size(ekf.features)
             if ~isnan(ekf.features(1,jf))
                 %% we have seen this feature before, update number of sightings
                 if ekf.verbose

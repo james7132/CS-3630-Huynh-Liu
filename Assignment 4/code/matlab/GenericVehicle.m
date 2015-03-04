@@ -223,7 +223,7 @@ classdef GenericVehicle < handle
             % vectorized code:
 
             thp = x(:,3) + dth;
-            xnext = x + [(dd+w(1))*cos(thp)  (dd+w(1))*sin(thp) ones(size(x,1),1)*dth+w(2)];
+            xnext = x + [(dd+w(1))*cos(thp) (dd+w(1))*sin(thp) ones(size(x,1),1)*dth+w(2)];
         end
 
         function odo = update(veh, u)
@@ -242,7 +242,7 @@ classdef GenericVehicle < handle
             odo = [colnorm(veh.x(1:2)-xp(1:2)) veh.x(3)-xp(3)];
             veh.odometry = odo;
             
-            veh.x_hist = [veh.x_hist; veh.x'];   % maintain history
+            veh.x_hist = [veh.x_hist; veh.x];   % maintain history
             
             
 
@@ -449,7 +449,7 @@ classdef GenericVehicle < handle
             % Notes::
             % - The path is extracted from the x_hist property.
             
-            xyt = veh.x_hist;
+            xyt = veh.x_hist
             if nargout == 0
                 plot(xyt(:,1), xyt(:,2), varargin{:});
             else

@@ -3,26 +3,29 @@
 path(path, 'aprilTag');
 
 % Specify the locations of the April tags in the Map
-A =  [-16, 0;
-      -16, 25;
-      0, 33.5;
-      55, 25;
-      55, 14.5;
-      27, 14.5;
-      41, -4.5;]
+A =  zeros(500, 2);
+A(A == 0) = NaN;
+A(325, :) = [-59, 29];
+A(324, :) = [0, 38];
+A(326, :) = [30, 28];
+A(320, :) = [-61, 10];
+A(323, :) = [-61, -19];
+A(321, :) = [-26, -37];
+A(322, :) = [41, -23];
 %% and a robot with noisy odometry
 
-V=diag([0.1, 1.1*pi/180].^2);
+V=diag([.1, .3*pi/180].^2);        % default 0.1, 1.1
 veh=GenericVehicle(V,'dt',0.1);
-veh.x0 = [0,0, pi];
-veh.add_driver(DeterministicPath('log-1423547652.txt'));
+veh.x0 = [0,0, pi/4];
+driver = DeterministicPath('log-out.txt');
+veh.add_driver(driver);
 
 % Creating the map. It places landmarks according to 'A' matrix.
-map = LandmarkMap(20, A, 5);
+map = LandmarkMap(500, A, 5);
 
 % Creating the sensor.  We firstly define the covariance of the sensor measurements
 % which report distance and bearing angle
-W = diag([0.1, 1*pi/180].^2);
+W = diag([0.1, 0.1*pi/180].^2);       %  default 0.1 1
 
 % and then use this to create an instance of the Sensor class.
 sensor = GenericRangeBearingSensor(veh, map, W, 'animate');
@@ -31,7 +34,7 @@ sensor = GenericRangeBearingSensor(veh, map, W, 'animate');
 
 % Create the filter.  First we need to determine the initial covariance of the
 % vehicle, this is our uncertainty about its pose (x, y, theta)
-P0 = diag([0.005, 0.005, 0.001].^2);
+P0 = diag([0.1, 0.1, 0.1 * pi/180].^2);  % default .005 .005 .001s
 
 % Now we create an instance of the EKF filter class
 ekf = GenericEKF(veh, V, P0, sensor, W, []);
@@ -41,7 +44,7 @@ ekf = GenericEKF(veh, V, P0, sensor, W, []);
 % Now we will run the filter for 1000 time steps.  At each step the vehicle
 % moves, reports its odometry and the sensor measurements and the filter updates
 % its estimate of the vehicle's pose
-ekf.run(1000);
+ekf.run(596); %596 non-closure  %870 closure
 % all the results of the simulation are stored within the EKF object
 
 % First let's plot the map

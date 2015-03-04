@@ -36,7 +36,7 @@ switch ext
         left = stats(:,8);
         bearing = atan((centroidX - left)/focal_length);
         z = [range bearing ];   % range & bearing measurement       
-        js = stats(:,1);      
+        js = stats(:,1);
         
 
     otherwise
