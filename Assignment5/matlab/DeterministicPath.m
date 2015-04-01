@@ -13,7 +13,7 @@ classdef DeterministicPath < handle
         function driver = DeterministicPath(filename)
             % Constructor
             fileID = fopen(filename);
-            driver.log = textscan(fileID, '%f32 %f32 %s');            
+            driver.log = textscan(fileID, '%d %d %s');            
             driver.nrLines=size(driver.log{1},1)
             fprintf(1,'read %d lines from %s\n',driver.nrLines,filename);
             driver.counter=1;
@@ -40,7 +40,7 @@ classdef DeterministicPath < handle
                 uL=v(1);
                 uR=v(2);
                 
-                scale = 1;  %Change it to accordingly to what you used in Assignment 3
+                scale = 39.3701;  %Change it to accordingly to what you used in Assignment 3
                 ScaledUL = double(uL)*scale;
                 ScaledUR = double(uR)*scale;
                 
@@ -48,8 +48,8 @@ classdef DeterministicPath < handle
                 L = 5.75;
                 
                 % calculate speed
-                u(1) = 4.375 * r.*((ScaledUL+ScaledUR)./2);
-                u(2) = 5.25 * (r./L).*(ScaledUR-ScaledUL);
+                u(1) = 0.04 * r.*((ScaledUL+ScaledUR)./2);
+                u(2) = 0.1875 * (r./L).*(ScaledUR-ScaledUL);
                 measurement = driver.log{3}(driver.counter);
                 
                 if measurement{1} == '0'

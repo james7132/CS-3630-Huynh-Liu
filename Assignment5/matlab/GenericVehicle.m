@@ -144,8 +144,8 @@ classdef GenericVehicle < handle
 
             opt.stlim = 0.5;
             opt.vmax = 5;
-            opt.L = 1;
-            opt.rdim = 0.2;
+            opt.L = 5.75;
+            opt.rdim = 1.375;
             opt.dt = 0.1;
             opt.x0 = zeros(3,1);
             opt = tb_optparse(opt, varargin);
@@ -223,7 +223,7 @@ classdef GenericVehicle < handle
             % vectorized code:
 
             thp = x(:,3) + dth;
-            xnext = x + [(dd+w(1))*cos(thp) (dd+w(1))*sin(thp) ones(size(x,1),1)*dth+w(2)];
+            xnext = x + [(dd+w(1))*cos(thp)  (dd+w(1))*sin(thp) ones(size(x,1),1)*dth+w(2)];
         end
 
         function odo = update(veh, u)
@@ -451,7 +451,7 @@ classdef GenericVehicle < handle
             
             xyt = veh.x_hist;
             if nargout == 0
-                plot(xyt(:,1), xyt(:,2), varargin{:})
+                plot(xyt(:,1), xyt(:,2), varargin{:});
             else
                 out = xyt;
             end

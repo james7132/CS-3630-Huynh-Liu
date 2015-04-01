@@ -144,9 +144,7 @@ classdef GenericRangeBearingSensor < Sensor
             
             % Get range and bearing to the April Tag
             %[z, jf] = getRangeAndBearing(filename);
-            %z(1) = z(1) * 0.4 * 39.3701;
-            %z(2) = z(2) * 0.1;
-            z = [0, 0];
+            z = [1 1]';
             jf = 1;
             if s.verbose
                 fprintf('Sensor:: feature %d: %.1f %.1f\n', k, z);

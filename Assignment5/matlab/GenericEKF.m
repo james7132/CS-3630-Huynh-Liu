@@ -560,10 +560,9 @@ classdef GenericEKF < handle
                 P = ekf.P_est(n:n+1,n:n+1);
                 % TODO reinstate the interval feature
                 %plot_ellipse(xf, P, interval, 0, [], varargin{:});
-                hold on
-                plot_ellipse(covar^2*P, xf, varargin{:});
+                %plot_ellipse(covar^2*P, xf, varargin{:});
                 plot(xf(1), xf(2), '+')
-                hold off
+                
                 xy = [xy xf];
             end
             
@@ -696,32 +695,22 @@ classdef GenericEKF < handle
                 xv_est = ekf.x_est(1:3);
                 xm_est = ekf.x_est(4:end);
 
-                Pvv_est = ekf.P_est(1:3,1:3);  % Estimated vehicle covariance
-                Pmm_est = ekf.P_est(4:end,4:end); % Estimated map covariance
-                Pvm_est = ekf.P_est(1:3,4:end); % Vehicle-map covariance
+                Pvv_est = ekf.P_est(1:3,1:3);
+                Pmm_est = ekf.P_est(4:end,4:end);
+                Pvm_est = ekf.P_est(1:3,4:end);
 
                   
                 % evaluate the state update function and the Jacobians
                 % if vehicle has uncertainty, predict its covariance
                 xv_pred = ekf.robot.f(xv_est', odo)';
 
-                Fx = ekf.robot.Fx(xv_est, odo); % Jacobian of f() w.r.t x
+                Fx = ekf.robot.Fx(xv_est, odo);
                 Fv = ekf.robot.Fv(xv_est, odo);
-                odomCov = Fv*ekf.V_est*Fv';
-                
-                %-------------------------------------------------
-                % Predicted Covariance of vehicle and map
-                %------------------------------------------------
-                
-                % Predicted covariance of vehicle
-                Pvv_pred = Fx * Pvv_est * Fx' + odomCov; %% <-- IMPLEMENT (use Fx, Pvv_est, odomCov);            
-                
-                % Predicted covariance of map
-                Pmm_pred = Pmm_est; %% <-- IMPLEMENT (use Pmm_est)
-                
-                % Predicted map-vehicle covariance
-                Pvm_pred = Fx * Pvm_est; %% <-- IMPLEMENT (use Fx, Pvm_est)
-                
+                Pvv_pred = Fx*Pvv_est*Fx' + Fv*ekf.V_est*Fv';
+            
+                % Compute the correlations
+                Pvm_pred = Fx*Pvm_est;
+                Pmm_pred = Pmm_est;
                 xm_pred = xm_est;
            
                 % vehicle and map
@@ -758,12 +747,10 @@ classdef GenericEKF < handle
 
             if sensorReading
 
-                                
-                z_pred = ekf.sensor.h(xv_pred', js)';
                 
-                % Innovation
-                innov(1) = z(1) - z_pred(1); %% <-- IMPLEMENT (use z_pred, z)
-                innov(2) = z(2) - z_pred(2); %% <-- IMPLEMENT (use z_pred, z)
+                z_pred = ekf.sensor.h(xv_pred', js)';
+                innov(1) = z(1) - z_pred(1);
+                innov(2) = angdiff(z(2), z_pred(2));
 
                     % the map is estimated SLAM case
                     if ekf.seenBefore(js)
@@ -787,6 +774,9 @@ classdef GenericEKF < handle
                         end
                         doUpdatePhase = true;
 
+        %                if mod(i, 40) == 0
+        %                    plot_ellipse(x_est(jx:jx+1), P_est(jx:jx+1,jx:jx+1), 5);
+        %                end
                     else
                         % get the extended state
                         [x_pred, P_pred] = ekf.extendMap(P_pred, xv_pred, xm_pred, z, js);
@@ -808,21 +798,21 @@ classdef GenericEKF < handle
                 % compute x_est and P_est
 
                 % compute innovation covariance
-                S = Hx * P_pred * Hx' + ekf.W_est; % <-- IMPLEMENT (use Hx, Hw, P_pred, ekf.W_est);
-    
+                S = Hx*P_pred*Hx' + Hw*ekf.W_est*Hw';
+
                 % compute the Kalman gain
-                K = P_pred * Hx' * inv(S); % <-- IMPLEMENT (use P_pred, Hx, S);
+                K = P_pred*Hx' / S;
 
                 % update the state vector
-                x_est = x_pred + K * innov'; % <-- IMPLEMENT (use x_pred, innov, K);
-                
+                x_est = x_pred + K*innov';
+            
                 if ekf.estVehicle
                     % wrap heading state for a vehicle
                     x_est(3) = angdiff(x_est(3));
                 end
             
                 % update the covariance
-                P_est = P_pred - K * S * K'; % <-- IMPLEMENT (use K,S,P_pred);
+                    P_est = P_pred - K*S*K';
                 
                 % enforce P to be symmetric
                 P_est = 0.5*(P_est+P_est');
@@ -856,8 +846,6 @@ classdef GenericEKF < handle
         end
 
         function s = seenBefore(ekf, jf)
-            jf
-            size(ekf.features)
             if ~isnan(ekf.features(1,jf))
                 %% we have seen this feature before, update number of sightings
                 if ekf.verbose
